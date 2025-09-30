@@ -119,19 +119,7 @@ export const enableUser = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-export const userLogout = (req, res) => {
-  if (req.session) {
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(500).json({ success: false, message: "Logout failed" });
-      }
-      res.clearCookie('connect.sid'); 
-      return res.status(200).json({ success: true, message: "logout successful" });
-    });
-  } else {
-    return res.status(500).json({ success: true, message: "No active session" });
-  }
-};
+
 
 export const updateProfileById = async (req, res) => {
   try {
@@ -157,5 +145,18 @@ export const updateProfileById = async (req, res) => {
 
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+export const userLogout = (req, res) => {
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        return res.status(500).json({ success: false, message: "Logout failed" });
+      }
+      return res.status(200).json({ success: true, message: "logout successful" });
+    });
+  } else {
+    return res.status(500).json({ success: true, message: "No active session" });
   }
 };

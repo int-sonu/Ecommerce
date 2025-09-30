@@ -14,7 +14,8 @@ route.delete('/logout', userLogout);
 
 
 route.use(isAuthenticated);
-route.put('/user/update/:id', updateProfileById);
+
+route.put('update/:id', updateProfileById);
 
 route.get('/products/:id',findproductreadId)
 route.get('/products',findproductread)

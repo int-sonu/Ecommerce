@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 
 export const addcart = async (req, res) => {
   try {
-    const user = req.session.user;
+    const user = req.session?.user;
     const { productId, quantity } = req.body;
 
     const existingProduct = await Product.findById(productId);
@@ -54,7 +54,7 @@ export const addcart = async (req, res) => {
 
       await newCart.save();
 
-      return res.status(201).json({
+      return res.status(200).json({
         message: "Product added into cart successfully",
         cart: newCart
       });

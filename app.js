@@ -24,9 +24,9 @@ app.use(session({
 }));
 app.use('/uploads', express.static('uploads'));
 
-app.use(router)
 
-app.use(route)
+app.use('/user',route)
+app.use(router)
 
 app.get("/", (req, res) => {
   res.send("Hello, World!Server is running");
