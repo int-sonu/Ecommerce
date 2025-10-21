@@ -2,11 +2,17 @@ import { Aggregate } from 'mongoose';
 import { Cart } from '../Model/cart.js';
 import { Product } from '../Model/product.js';
 import mongoose from 'mongoose';
-
 export const addcart = async (req, res) => {
   try {
     const user = req.session?.user;
-    const { productId, quantity } = req.body;
+
+    // 🚨 Check if user is logged in
+    if (!user) {
+      return res.status(401).json({ message: "Please log in to add products to your cart" });
+    }
+
+    const productId = req.params.id;
+    const { quantity } = req.body;
 
     const existingProduct = await Product.findById(productId);
     if (!existingProduct) {
@@ -16,35 +22,24 @@ export const addcart = async (req, res) => {
     let userCart = await Cart.findOne({ user: user._id });
 
     if (userCart) {
-      const itemExists = await Cart.findOne({
-        user: user._id,
-        "items.Product": productId
-      });
-
+      const itemExists = userCart.items.find(item => item.Product.toString() === productId);
       if (itemExists) {
         await Cart.updateOne(
           { user: user._id, "items.Product": productId },
           { $inc: { "items.$.quantity": quantity } }
         );
-
-        userCart = await Cart.findOne({ user: user._id });
-
-        return res.status(200).json({
-          message: "Cart updated successfully",
-          cart: userCart
-        });
       } else {
         await Cart.updateOne(
           { user: user._id },
           { $push: { items: { Product: productId, quantity } } }
         );
-        userCart = await Cart.findOne({ user: user._id });
-
-        return res.status(200).json({
-          message: "Product added into cart successfully",
-          cart: userCart
-        });
       }
+
+      userCart = await Cart.findOne({ user: user._id });
+      return res.status(200).json({
+        message: "Cart updated successfully",
+        cart: userCart
+      });
 
     } else {
       const newCart = new Cart({
@@ -66,6 +61,7 @@ export const addcart = async (req, res) => {
   }
 };
 
+
 export const updateCartQuantity = async (req, res) => {
   try {
     const user = req.session.user;
@@ -86,16 +82,41 @@ export const updateCartQuantity = async (req, res) => {
     if (!updatedCart) {
       return res.status(404).json({ message: "Product not found in cart " });
     }
+ const cartData = await Cart.aggregate([
+      { $match: { user: user._id } },
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.Product",
+          foreignField: "_id",
+          as: "productdetails",
+        },
+      },
+      { $unwind: "$productdetails" },
+      {
+        $addFields: {
+          "items.product_name": "$productdetails.product_name",
+          "items.price": "$productdetails.price",
+          "items.image": "$productdetails.image",
+          "items.subtotal": { $multiply: ["$items.quantity", "$productdetails.price"] },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          user: { $first: "$user" },
+          items: { $push: "$items" },
+          total: { $sum: "$items.subtotal" },
+        },
+      },
+    ]);
 
-    return res.status(200).json({
-      message: "Cart updated successfully", cart: updatedCart
-    });
-
+    res.status(200).json({ message: "Cart updated", cart: cartData[0] });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
-
 
 
 export const deletecart = async (req, res) => {
@@ -156,6 +177,7 @@ export const findcart = async (req, res) => {
         $addFields: {
           "items.product_name": "$productdetails.product_name",
           "items.price": "$productdetails.price",
+          "items.image": "$productdetails.image", 
           "items.subtotal": {
             $multiply: ["$items.quantity", "$productdetails.price"],
           },

@@ -5,9 +5,15 @@ import dotenv from "dotenv";
 import router from "./routes/route.js";
 import { connectDB } from './db/db.js';
 import route from "./routes/userroute.js";
-
+import cors from 'cors'
 dotenv.config();
 const app = express();
+
+app.use(cors({
+  origin:process.env.Cors_uri,
+  credentials: true 
+
+}))
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());

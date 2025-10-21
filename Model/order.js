@@ -6,35 +6,21 @@ const orderSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-     items: [{
-       product_name: {
-        type: String,
-        required: true,
-        unique: true
-    },
-     quantity:{
-        type:Number,
-        required:true,
-        default:1
-        },
-
-        price: {
-        type: Number,
-        required: true,
-        min: 0
-    },
-    subtotal:{
-        type:Number,
-    },
+    items: [{
+        product_name: { type: String, required: true },
+        quantity: { type: Number, required: true, default: 1 },
+        price: { type: Number, required: true, min: 0 },
+        subtotal: { type: Number },
+          image: { type: String },
     }],
 
-    Total:{
-         type:Number,
+    Total: {
+        type: Number,
 
     },
-    order_status:{
-        type:String,
-       enum: ['Ordered','shipped','delivered'],
+    order_status: {
+        type: String,
+        enum: ['Ordered', 'shipped', 'delivered', 'Cancelled'],
 
     },
 

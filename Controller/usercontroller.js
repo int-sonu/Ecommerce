@@ -20,6 +20,7 @@ export const register = async (req, res) => {
             newUser
         });
     } catch (error) {
+        console.log("hello")
         res.status(500).json({ error: error.message });
     }
 }
@@ -158,5 +159,40 @@ export const userLogout = (req, res) => {
     });
   } else {
     return res.status(500).json({ success: true, message: "No active session" });
+  }
+};
+
+
+export const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully", user: deletedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+export const checkAuth = (req, res) => {
+  if (req.session?.user) {
+    res.status(200).json({ user: req.session.user });
+  } else {
+    res.status(200).json({ user: null });
+  }
+};
+
+
+export const checkAuthenticator= (req, res) => {
+  if (req.session?.Admin) {
+    res.status(200).json({ Admin: req.session.Admin });
+  } else {
+    res.status(200).json({ Admin: null });
   }
 };

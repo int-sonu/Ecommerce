@@ -39,7 +39,7 @@ export const deletecategories = async (req, res) => {
 export const getcategories = async (req, res) => {
     try {
         const getcategoryid = req.params.id;
-        const getallcategoryId = await Category.findById(getcategoryid)
+        const getallcategoryId = await Category.findById(getcategoryid).populate("products");
         res.send(getallcategoryId)
     }
     catch (error) {

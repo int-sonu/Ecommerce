@@ -1,5 +1,6 @@
 import express from 'express';
 import multer from "multer";
+import { checkAuth, checkAuthenticator, deleteUser } from "../Controller/usercontroller.js";
 import { register, userlogin, adminlogin, getAllUsers, enabledisableuser, getAllUsersbyid, enableUser, userLogout } from '../Controller/usercontroller.js';
 import {isAdmin } from '../middleware/auth.js';
 import { categories, deletecategories, getcategories, getallcategories, updatecategories,findcategoryread,findcategoryreadId} from '../Controller/categorycontroller.js';
@@ -17,6 +18,8 @@ router.get('/products/:id',findproductreadId)
 router.get('/categories',findcategoryread)
 router.get('/categories/:id',findcategoryreadId)
 router.delete('/logout', userLogout); 
+router.get("/check-auth", checkAuth);
+router.get("/checked-auth", checkAuthenticator);
 
 
 router.use(isAdmin)
@@ -39,6 +42,7 @@ router.get('/admin/order',getAllOrdersAdmin )
 router.get('/admin/order',getAllOrdersAdmin )
 router.put('/admin/order/:id',updateOrderStatus )
 router.delete("/admin/orders/:id", deleteOrderAdmin);
+router.delete("/admin/users/:id", deleteUser);
 
 export default router;
 

@@ -22,8 +22,9 @@ async function connectDB() {
 app.get('/findproducts',async(req,res)=>{
 
     const {name}=req.query
-    const findproduct=await products.findOne({name}).toArray()
-    res.json(findproduct)
+    const findproduct = await usersCollection.findOne({ name })
+res.json(findproduct)
+
 })
 
 app.listen(3000,()=>{
