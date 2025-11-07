@@ -1,42 +1,46 @@
-import express from "express"
-import { isAuthenticated } from '../middleware/auth.js';
-import { findproductread,findproductreadId, getProductsByCategory } from "../Controller/productcontroller.js";
-import { findcategoryread,findcategoryreadId } from '../Controller/categorycontroller.js';
-import { updateProfileById, userLogout } from '../Controller/usercontroller.js';
+import express from "express";
+import { isAuthenticated } from "../middleware/auth.js";
+import { findproductread, findproductreadId, getProductsByCategory } from "../Controller/productcontroller.js";
+import { findcategoryread, findcategoryreadId } from "../Controller/categorycontroller.js";
+import { getAllUsers, getAllUsersbyid, register,  updateProfile,  userlogin, userLogout } from "../Controller/usercontroller.js";
+import { addcart, findcart, deletecart, updateCartQuantity } from "../Controller/cartcontroller.js";
+import { cancelOrder, createOrderFromCart, getAllOrders, getOrderById, removeOrder } from "../Controller/ordercontroller.js";
+import { upload } from "../middleware/multer.js";
 
-// import {updateprofile } from '../Controller/usercontroller.js';
-import { addcart ,findcart,deletecart,updateCartQuantity} from '../Controller/cartcontroller.js';
-import { cancelOrder, createOrderFromCart, getAllOrders, getOrderById } from "../Controller/ordercontroller.js";
+const route = express.Router();
 
-const route=express.Router()
-
-route.delete('/logout', userLogout); 
-
+// Logout route
+route.delete("/logout", userLogout);
 
 route.use(isAuthenticated);
 
-route.put('update/:id', updateProfileById);
+route.get("/users/:id", getAllUsersbyid);
+route.get("/users", getAllUsers);
+route.put("/profile",  updateProfile);
 
-route.get('/products/:id',findproductreadId)
-route.get('/products',findproductread)
+route.post('/register', register)
+route.post('/login', userlogin)
+// Product routes
+route.get("/products/:id", findproductreadId);
+route.get("/products", findproductread);
+route.get("/products/category/:id", getProductsByCategory);
 
-route.get('/categories',findcategoryread)
-route.get('/categories/:id',findcategoryreadId)
-route.get("/products/categories/:id", getProductsByCategory);
-
-route.post('/cart/:id',isAuthenticated,addcart)
-route.put('/cart/:productId',isAuthenticated,updateCartQuantity)
-route.delete('/cart/:productId',isAuthenticated,deletecart)
-
-route.get('/cart/:userId',isAuthenticated,findcart)
-route.post("/order/create", isAuthenticated,createOrderFromCart);
-route.get('/order',getAllOrders)
-route.get('/order/:id',getOrderById)
+// Category routes
+route.get("/categories", findcategoryread);
+route.get("/categories/:id", findcategoryreadId);
 route.get("/categories/:id/products", getProductsByCategory);
-route.put("/order/cancel/:id", cancelOrder); 
 
+// Cart routes
+route.post("/cart/:id", addcart);
+route.put("/cart/:productId", updateCartQuantity);
+route.delete("/cart/:productId", deletecart);
+route.get("/cart/:userId", findcart);
 
-// route.put('/updateuser/:id', updateprofile);
-
+// Order routes
+route.post("/order/create", createOrderFromCart);
+route.get("/order", getAllOrders);
+route.get("/order/:id", getOrderById);
+route.put("/order/cancel/:id", cancelOrder);
+route.delete("order/remove/:id", removeOrder);
 
 export default route;

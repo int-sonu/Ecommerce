@@ -1,14 +1,16 @@
-import { Aggregate } from 'mongoose';
-import { Cart } from '../Model/cart.js';
-import { Product } from '../Model/product.js';
-import mongoose from 'mongoose';
+import { Cart } from "../Model/cart.js";
+import { Product } from "../Model/product.js";
+import mongoose from "mongoose";
+
+
 export const addcart = async (req, res) => {
   try {
     const user = req.session?.user;
 
-    // 🚨 Check if user is logged in
     if (!user) {
-      return res.status(401).json({ message: "Please log in to add products to your cart" });
+      return res
+        .status(401)
+        .json({ message: "Please log in to add products to your cart" });
     }
 
     const productId = req.params.id;
@@ -19,11 +21,27 @@ export const addcart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    if (quantity > existingProduct.stock) {
+      return res
+        .status(400)
+        .json({ message: "Not enough stock available for this product" });
+    }
+
     let userCart = await Cart.findOne({ user: user._id });
 
     if (userCart) {
-      const itemExists = userCart.items.find(item => item.Product.toString() === productId);
+      const itemExists = userCart.items.find(
+        (item) => item.Product.toString() === productId
+      );
+
       if (itemExists) {
+        const newQuantity = itemExists.quantity + quantity;
+        if (newQuantity > existingProduct.stock) {
+          return res
+            .status(400)
+            .json({ message: "Not enough stock to add more of this item" });
+        }
+
         await Cart.updateOne(
           { user: user._id, "items.Product": productId },
           { $inc: { "items.$.quantity": quantity } }
@@ -38,23 +56,21 @@ export const addcart = async (req, res) => {
       userCart = await Cart.findOne({ user: user._id });
       return res.status(200).json({
         message: "Cart updated successfully",
-        cart: userCart
+        cart: userCart,
       });
-
     } else {
       const newCart = new Cart({
         user: user._id,
-        items: [{ Product: productId, quantity }]
+        items: [{ Product: productId, quantity }],
       });
 
       await newCart.save();
 
       return res.status(200).json({
         message: "Product added into cart successfully",
-        cart: newCart
+        cart: newCart,
       });
     }
-
   } catch (error) {
     console.error("Cart error:", error);
     res.status(400).json({ error: error.message });
@@ -73,6 +89,12 @@ export const updateCartQuantity = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    if (quantity > existingProduct.stock) {
+      return res
+        .status(400)
+        .json({ message: "Not enough stock available" });
+    }
+
     const updatedCart = await Cart.findOneAndUpdate(
       { user: user._id, "items.Product": productId },
       { $set: { "items.$.quantity": quantity } },
@@ -80,9 +102,10 @@ export const updateCartQuantity = async (req, res) => {
     );
 
     if (!updatedCart) {
-      return res.status(404).json({ message: "Product not found in cart " });
+      return res.status(404).json({ message: "Product not found in cart" });
     }
- const cartData = await Cart.aggregate([
+
+    const cartData = await Cart.aggregate([
       { $match: { user: user._id } },
       { $unwind: "$items" },
       {
@@ -99,7 +122,10 @@ export const updateCartQuantity = async (req, res) => {
           "items.product_name": "$productdetails.product_name",
           "items.price": "$productdetails.price",
           "items.image": "$productdetails.image",
-          "items.subtotal": { $multiply: ["$items.quantity", "$productdetails.price"] },
+          "items.stock": "$productdetails.stock", 
+          "items.subtotal": {
+            $multiply: ["$items.quantity", "$productdetails.price"],
+          },
         },
       },
       {
@@ -136,13 +162,13 @@ export const deletecart = async (req, res) => {
     );
 
     if (!updatedCart) {
-      return res.status(404).json({ message: " cart does not exist" });
+      return res.status(404).json({ message: "Cart does not exist" });
     }
 
     return res.status(200).json({
-      message: "product deleted successfully", cart: updatedCart
+      message: "Product deleted successfully",
+      cart: updatedCart,
     });
-
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -177,7 +203,8 @@ export const findcart = async (req, res) => {
         $addFields: {
           "items.product_name": "$productdetails.product_name",
           "items.price": "$productdetails.price",
-          "items.image": "$productdetails.image", 
+          "items.image": "$productdetails.image",
+          "items.stock": "$productdetails.stock", 
           "items.subtotal": {
             $multiply: ["$items.quantity", "$productdetails.price"],
           },
@@ -201,4 +228,4 @@ export const findcart = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
-}
+};

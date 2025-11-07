@@ -8,6 +8,7 @@ import { addproduct ,getproductId,getallproduct,deleteproduct,updateproduct,find
 import { upload } from "../middleware/multer.js";
 import { deleteOrderAdmin, getAllOrdersAdmin, updateOrderStatus } from '../Controller/ordercontroller.js';
 // import {updateprofile } from '../Controller/usercontroller.js';
+
 const router = express.Router()
 
 router.post('/register', register)

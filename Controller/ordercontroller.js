@@ -1,63 +1,60 @@
 import mongoose from "mongoose";
 import { Cart } from "../Model/cart.js";
 import { Order } from "../Model/order.js";
+import { Product } from "../Model/product.js";
 
 export const createOrderFromCart = async (req, res) => {
   try {
     const userId = req.session.user?._id;
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    if (!userId) return res.status(401).json({ message: "User not authenticated" });
 
-  
     const cart = await Cart.findOne({ user: userId }).populate("items.Product");
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
+    if (!cart || cart.items.length === 0) return res.status(400).json({ message: "Cart is empty" });
 
-    
     const uniqueItemsMap = new Map();
     cart.items.forEach((item) => {
       const key = item.Product._id.toString();
-      if (!uniqueItemsMap.has(key)) {
-        uniqueItemsMap.set(key, { ...item._doc, quantity: item.quantity });
-      } else {
-        uniqueItemsMap.get(key).quantity += item.quantity;
-      }
+      if (!uniqueItemsMap.has(key)) uniqueItemsMap.set(key, { ...item._doc, quantity: item.quantity });
+      else uniqueItemsMap.get(key).quantity += item.quantity;
     });
 
     const uniqueItems = Array.from(uniqueItemsMap.values());
 
-    const orderItems = uniqueItems.map((item) => {
-      const subtotal = item.Product.price * item.quantity;
-      return {
-        product_name: item.Product.product_name,
-        quantity: item.quantity,
-        price: item.Product.price,
-        subtotal,
-        image: item.Product.image, // store image
-      };
-    });
+    for (let item of uniqueItems) {
+      if (item.quantity > item.Product.stock) {
+        return res.status(400).json({ message: `Only ${item.Product.stock} ${item.Product.product_name} available in stock!` });
+      }
+    }
+
+    for (let item of uniqueItems) {
+      const product = await Product.findById(item.Product._id);
+      product.stock -= item.quantity;
+      if (product.stock < 0) product.stock = 0;
+      await product.save();
+    }
+
+    const orderItems = uniqueItems.map((item) => ({
+      product_name: item.Product.product_name,
+      quantity: item.quantity,
+      price: item.Product.price,
+      subtotal: item.Product.price * item.quantity,
+      image: item.Product.image,
+    }));
 
     const total = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
 
     const newOrder = new Order({
       user: userId,
       items: orderItems,
-      total,
+      Total: total,
       order_status: "Ordered",
     });
 
     await newOrder.save();
-
     await Cart.updateOne({ user: userId }, { $set: { items: [] } });
 
-    res.status(201).json({
-      message: "Order created successfully",
-      order: newOrder,
-    });
+    res.status(201).json({ message: "Order created successfully", order: newOrder });
   } catch (error) {
-    console.error("Error creating order:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -171,6 +168,32 @@ export const cancelOrder = async (req, res) => {
     res.status(200).json({ message: "Order cancelled successfully", order });
   } catch (error) {
     console.error("Error cancelling order:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+export const removeOrder = async (req, res) => {
+  try {
+    const userId = req.session.user?._id;
+    const { id } = req.params;
+
+    if (!userId) return res.status(401).json({ message: "User not authenticated" });
+
+    const order = await Order.findOne({ _id: id, user: userId });
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    if (order.order_status !== "Cancelled" && order.order_status !== "Delivered") {
+      return res.status(400).json({
+        message: "Only cancelled or delivered orders can be deleted permanently.",
+      });
+    }
+
+    await Order.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Order removed successfully" });
+  } catch (error) {
+    console.error("Error removing order:", error);
     res.status(500).json({ error: error.message });
   }
 };
