@@ -10,8 +10,8 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin:process.env.Cors_uri,
-  credentials: true 
+  origin: process.env.Cors_uri,
+  credentials: true
 
 }))
 const PORT = process.env.PORT || 3000;
@@ -31,7 +31,7 @@ app.use(session({
 app.use('/uploads', express.static('uploads'));
 
 
-app.use('/user',route)
+app.use('/api/user', route)
 app.use(router)
 
 app.get("/", (req, res) => {
