@@ -25,10 +25,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: "mongodb://127.0.0.1:27017/nodeproject" }),
+  store: MongoStore.create({ mongoUrl: "mongodb+srv://sonu_sebastian:node%401416@node-project.p7m3col.mongodb.net/?appName=Node-Project" }),
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
-app.use('/uploads', express.static('uploads'));
+app.use('/api/uploads', express.static('uploads'));
 
 
 app.use('/api/user', route)

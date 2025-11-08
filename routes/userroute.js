@@ -11,6 +11,7 @@ const route = express.Router();
 
 // Logout route
 route.delete("/logout", userLogout);
+route.post('/login', userlogin)
 
 route.use(isAuthenticated);
 
@@ -19,7 +20,6 @@ route.get("/users", getAllUsers);
 route.put("/profile",  updateProfile);
 
 route.post('/register', register)
-route.post('/login', userlogin)
 // Product routes
 route.get("/products/:id", findproductreadId);
 route.get("/products", findproductread);
