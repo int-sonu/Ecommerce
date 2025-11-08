@@ -8,6 +8,7 @@ import route from "./routes/userroute.js";
 import cors from 'cors'
 dotenv.config();
 const app = express();
+app.use('/api/uploads', express.static('uploads'));
 
 app.use(cors({
   origin: process.env.Cors_uri,
@@ -28,7 +29,6 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: "mongodb+srv://sonu_sebastian:node%401416@node-project.p7m3col.mongodb.net/?appName=Node-Project" }),
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
-app.use('/api/uploads', express.static('uploads'));
 
 
 app.use('/api/user', route)
