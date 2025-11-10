@@ -1,5 +1,5 @@
 import express from "express";
-import { isAuthenticated } from "../middleware/auth.js";
+import { isAuthenticated } from "../middleware/usermiddleware.js";
 import { findproductread, findproductreadId, getProductsByCategory } from "../Controller/productcontroller.js";
 import { findcategoryread, findcategoryreadId } from "../Controller/categorycontroller.js";
 import { getAllUsers, getAllUsersbyid, register,  updateProfile,  userlogin, userLogout } from "../Controller/usercontroller.js";
@@ -11,8 +11,8 @@ const route = express.Router();
 
 // Logout route
 route.delete("/logout", userLogout);
-route.post('/login', userlogin)
 
+route.post('/login', userlogin)
 route.use(isAuthenticated);
 
 route.get("/users/:id", getAllUsersbyid);
