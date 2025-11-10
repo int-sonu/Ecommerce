@@ -6,6 +6,7 @@ import router from "./routes/route.js";
 import { connectDB } from './db/db.js';
 import route from "./routes/userroute.js";
 import cors from 'cors'
+import publicrouter from "./routes/publicroute.js";
 dotenv.config();
 const app = express();
 app.use('/api/uploads', express.static('uploads'));
@@ -31,8 +32,9 @@ app.use(session({
 }));
 
 
+app.use(publicrouter)
 app.use('/api/user', route)
-app.use(router)
+app.use('/admin', router)
 
 app.get("/", (req, res) => {
   res.send("Hello, World!Server is running");
