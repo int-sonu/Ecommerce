@@ -26,7 +26,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: "mongodb+srv://sonu_sebastian:node%401416@node-project.p7m3col.mongodb.net/?appName=Node-Project" }),
+  store: MongoStore.create({ mongoUrl: process.env.atlas_URL }),
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
 

@@ -41,7 +41,6 @@ export const userlogin = async (req, res) => {
     }
 
     req.session.user = { _id: loginuser._id, role: 'user' };
-
     if (loginuser.status === 'Enable') {
       res.status(200).json({ message: 'User logged in successfully', user: loginuser });
     } else {
