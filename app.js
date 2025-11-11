@@ -33,8 +33,8 @@ app.use(session({
 
 
 app.use(publicrouter)
-app.use('/api/user', route)
-app.use('/api/admin', router)
+app.use('/user', route)
+app.use('/', router)
 
 app.get("/api/", (req, res) => {
   res.send("Hello, World!Server is running");
