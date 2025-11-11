@@ -31,7 +31,7 @@ route.get("/categories/:id", findcategoryreadId);
 route.get("/categories/:id/products", getProductsByCategory);
 
 // Cart routes
-route.post("/cart/:id", addcart);
+route.post("/cart", addcart);
 route.put("/cart/:productId", updateCartQuantity);
 route.delete("/cart/:productId", deletecart);
 route.get("/cart/:userId", findcart);
