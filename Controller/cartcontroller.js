@@ -13,7 +13,7 @@ export const addcart = async (req, res) => {
         .json({ message: "Please log in to add products to your cart" });
     }
 
-    const productId = req.params.id;
+    const productId = req.params.productId;
     const { quantity } = req.body;
 
     const existingProduct = await Product.findById(productId);

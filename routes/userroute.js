@@ -31,10 +31,10 @@ route.get("/categories/:id", findcategoryreadId);
 route.get("/categories/:id/products", getProductsByCategory);
 
 // Cart routes
-route.post("/cart", addcart);
+route.post("/cart/:productId", addcart);
 route.put("/cart/:productId", updateCartQuantity);
 route.delete("/cart/:productId", deletecart);
-route.get("/cart/:userId", findcart);
+route.get("/cart", findcart);
 
 // Order routes
 route.post("/order/create", createOrderFromCart);
